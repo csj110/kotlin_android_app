@@ -1,7 +1,5 @@
 package com.example.myapplication.forecast
 
-import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.*
 
-import com.example.myapplication.details.ForecastDetailFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
@@ -22,6 +19,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class WeeklyForecastFragment : Fragment() {
 
     private val forecastRepo = ForecastRepo()
+
+    private lateinit var locationRepo:LocationRepo
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,8 +34,15 @@ class WeeklyForecastFragment : Fragment() {
             showLocationEntry()
         }
 
-        val code = arguments?.getString(KEY_ZIPCODE) ?: ""
-
+        //* observe the location change
+        locationRepo= LocationRepo(requireContext())
+        val savedLocationObserver=Observer<Location>{
+            when(it){
+                is Location.Zipcode -> forecastRepo.loadWeeklyForecast(it.zipcode)
+            }
+        }
+        locationRepo.savedLocation.observe(viewLifecycleOwner,savedLocationObserver)
+        //* endObserve
 
         val forecastList: RecyclerView = view.findViewById(R.id.list)
         forecastList.layoutManager = LinearLayoutManager(requireContext())
@@ -49,9 +55,10 @@ class WeeklyForecastFragment : Fragment() {
             dailyForecastAdapter.submitList(items)
         }
 
-        forecastRepo.weeklyForecast.observe(this, weeklyForecastObserver)
+        forecastRepo.weeklyForecast.observe(viewLifecycleOwner, weeklyForecastObserver)
 
-        forecastRepo.loadForecast(code)
+
+        locationRepo= LocationRepo(requireContext())
         return view
     }
     private fun showLocationEntry(){

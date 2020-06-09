@@ -1,8 +1,5 @@
 package com.example.myapplication.forecast
 
-import android.content.Context
-import android.content.Intent
-import android.database.CursorIndexOutOfBoundsException
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -14,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.*
 
-import com.example.myapplication.details.ForecastDetailFragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
@@ -23,6 +19,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 class CurrentForecastFragment : Fragment() {
 
     private val forecastRepo = ForecastRepo()
+
+    private lateinit var locationRepo:LocationRepo
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,23 +34,31 @@ class CurrentForecastFragment : Fragment() {
             showLocationEntry()
         }
 
-        val code = arguments?.getString(KEY_ZIPCODE) ?: ""
-
-
         val forecastList: RecyclerView = view.findViewById(R.id.list)
         forecastList.layoutManager = LinearLayoutManager(requireContext())
         val dailyForecastAdapter = DailyForecastAdapter() {
             showForecastDetails(it)
         }
+        //* observe the location change
+        locationRepo= LocationRepo(requireContext())
+        val savedLocationObserver=Observer<Location>{
+            when(it){
+                is Location.Zipcode -> forecastRepo.loadCurentForecast(it.zipcode)
+            }
+        }
+        locationRepo.savedLocation.observe(viewLifecycleOwner,savedLocationObserver)
+        //* endObserve
+
         forecastList.adapter = dailyForecastAdapter
 
-        val weeklyForecastObserver = Observer<List<DailyForeCast>> { items ->
-            dailyForecastAdapter.submitList(items)
+        val currentForecastObserver = Observer<DailyForeCast> { item ->
+            dailyForecastAdapter.submitList(listOf(item))
         }
 
-        forecastRepo.weeklyForecast.observe(this, weeklyForecastObserver)
+        forecastRepo.currentForecast.observe(viewLifecycleOwner, currentForecastObserver)
 
-        forecastRepo.loadForecast(code)
+
+
         return view
     }
 

@@ -9,6 +9,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import com.example.myapplication.Location
+import com.example.myapplication.LocationRepo
 
 import com.example.myapplication.R
 
@@ -17,11 +19,15 @@ import com.example.myapplication.R
  */
 class LocationEntryFragment : Fragment() {
 
+    private lateinit var locationRepo:LocationRepo
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        locationRepo= LocationRepo(requireContext())
+
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_location_entry, container, false)
         val input: EditText = view.findViewById(R.id.input)
@@ -33,6 +39,8 @@ class LocationEntryFragment : Fragment() {
             if (code.length == 5) {
                 Toast.makeText(requireContext(), code, Toast.LENGTH_SHORT).show()
             } else {
+                locationRepo.saveLocation(Location.Zipcode(code))
+
                 findNavController().navigateUp()
             }
         }
