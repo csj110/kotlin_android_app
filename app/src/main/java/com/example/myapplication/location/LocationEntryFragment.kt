@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
+import com.example.myapplication.ForecastRepo
 import com.example.myapplication.Location
 import com.example.myapplication.LocationRepo
 
@@ -20,6 +21,7 @@ import com.example.myapplication.R
 class LocationEntryFragment : Fragment() {
 
     private lateinit var locationRepo:LocationRepo
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,14 +35,12 @@ class LocationEntryFragment : Fragment() {
         val input: EditText = view.findViewById(R.id.input)
         val button: Button = view.findViewById(R.id.button)
 
-
         button.setOnClickListener {
             val code: String = input.text.toString()
-            if (code.length == 5) {
+            if (code.length == 6) {
                 Toast.makeText(requireContext(), code, Toast.LENGTH_SHORT).show()
             } else {
                 locationRepo.saveLocation(Location.Zipcode(code))
-
                 findNavController().navigateUp()
             }
         }

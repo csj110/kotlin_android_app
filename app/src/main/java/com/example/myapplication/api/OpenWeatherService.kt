@@ -20,7 +20,14 @@ interface OpenWeatherMapService {
     @GET("/data/2.5/weather")
     fun currentWeather(
         @Query("zip") zipcode:String,
-        @Query("units") units:String,
         @Query("appid") appid:String
     ):Call<CurrentWeather>
+
+    @GET("/data/2.5/onecall")
+    fun sevenDayForecast(
+        @Query("lat") lat:Float,
+        @Query("lon") lon:Float,
+        @Query("exclude") exclude:String,
+        @Query("appid") appid: String
+    ):Call<WeeklyForecast>
 }

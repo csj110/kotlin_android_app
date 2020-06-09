@@ -5,13 +5,17 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myapplication.*
+import com.example.myapplication.api.CurrentWeather
+import com.example.myapplication.api.DailyForecast
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.fragment_current_forecast.*
 
 /**
  * A simple [Fragment] subclass.
@@ -34,28 +38,27 @@ class CurrentForecastFragment : Fragment() {
             showLocationEntry()
         }
 
-        val forecastList: RecyclerView = view.findViewById(R.id.list)
-        forecastList.layoutManager = LinearLayoutManager(requireContext())
-        val dailyForecastAdapter = DailyForecastAdapter() {
-            showForecastDetails(it)
-        }
+        val locationName=view.findViewById<TextView>(R.id.locationName)
+
+        val tempView=view.findViewById<TextView>(R.id.tempView)
+
         //* observe the location change
         locationRepo= LocationRepo(requireContext())
         val savedLocationObserver=Observer<Location>{
             when(it){
-                is Location.Zipcode -> forecastRepo.loadCurentForecast(it.zipcode)
+                is Location.Zipcode -> forecastRepo.loadCurrentForecast(it.zipcode)
             }
         }
         locationRepo.savedLocation.observe(viewLifecycleOwner,savedLocationObserver)
         //* endObserve
 
-        forecastList.adapter = dailyForecastAdapter
 
-        val currentForecastObserver = Observer<DailyForeCast> { item ->
-            dailyForecastAdapter.submitList(listOf(item))
+        val currentWeatherObserver = Observer<CurrentWeather> { item ->
+            locationName.text=item.name
+            tempView.text=item.forecast.temp.toString()
         }
 
-        forecastRepo.currentForecast.observe(viewLifecycleOwner, currentForecastObserver)
+        forecastRepo.currentWeather.observe(viewLifecycleOwner, currentWeatherObserver)
 
 
 
@@ -68,10 +71,10 @@ class CurrentForecastFragment : Fragment() {
     }
 
 
-    private fun showForecastDetails(item: DailyForeCast) {
-        val action=CurrentForecastFragmentDirections.actionCurrentForecastFragmentToForecastDetailFragment(item.temp,item.desc)
-        findNavController().navigate(action)
-    }
+//    private fun showForecastDetails(item: DailyForecast) {
+//    val action=CurrentForecastFragmentDirections.actionCurrentForecastFragmentToForecastDetailFragment(item.temp,item.desc)
+//    findNavController().navigate(action)
+//}
 
     companion object {
         const val KEY_ZIPCODE = "key_zipcode"
